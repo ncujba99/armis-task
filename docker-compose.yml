@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb-hosts-pipeline
+    ports:
+      - "27017:27017"
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+
+    restart: always
+
+  pipeline:
+    build: ./pipeline
+    container_name: pipeline
+    depends_on:
+      - mongodb
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=${DB_HOST}
+      - CROWDSTRIKE_URL=${CROWDSTRIKE_URL}
+    restart: unless-stopped
+
+
