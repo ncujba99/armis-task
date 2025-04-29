@@ -13,5 +13,6 @@ mongo_client = MongoClient(
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-api_key = os.getenv("API_TOKEN")
 crowdstrike_url = os.getenv("CROWDSTRIKE_URL")
+qualys_url = os.getenv("QUALYS_URL")
+api_key = os.getenv("API_TOKEN")
