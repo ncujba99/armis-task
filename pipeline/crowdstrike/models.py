@@ -10,8 +10,9 @@ class Policy(BaseModel):
     settings_hash: str
     assigned_date: datetime
     applied_date: datetime
-    rule_groups: Optional[List[Any]] = [] 
+    rule_groups: Optional[List[Any]] = []
     uninstall_protection: Optional[str] = None
+
 
 class DevicePolicies(BaseModel):
     prevention: Optional[Policy] = None
@@ -30,6 +31,7 @@ class Meta(BaseModel):
 
 class ModifiedTimestamp(BaseModel):
     date: datetime = Field(..., alias="$date")
+
 
 class HostItem(BaseModel):
 
@@ -80,4 +82,3 @@ class HostItem(BaseModel):
     connection_mac_address: Optional[str] = None
     chassis_type: Optional[str] = None
     chassis_type_desc: Optional[str] = None
-

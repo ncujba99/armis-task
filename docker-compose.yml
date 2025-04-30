@@ -1,28 +1,59 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:6.0
     container_name: mongodb-hosts-pipeline
     ports:
       - "27017:27017"
-
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
-
     restart: always
 
-  pipeline:
-    build: ./pipeline
-    container_name: pipeline
+  # CrowdStrike sync task
+  crowdstrike_sync:
+    profiles: ["crowdstrike-sync"]
+    build:
+      context: ./pipeline
+      dockerfile: Dockerfile
+    depends_on:
+      - mongodb 
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=mongodb-hosts-pipeline
+      - CROWDSTRIKE_URL=${CROWDSTRIKE_URL}
+      - API_TOKEN=${API_TOKEN}
+
+    command: python crowdstrike_sync_hosts.py 
+
+  # Qualys sync task
+  qualys_sync:
+    profiles: ["qualys-sync"]
+    build:
+      context: ./pipeline
+      dockerfile: Dockerfile
     depends_on:
       - mongodb
     environment:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
-      - DB_HOST=${DB_HOST}
-      - CROWDSTRIKE_URL=${CROWDSTRIKE_URL}
-    restart: unless-stopped
+      - DB_HOST=mongodb-hosts-pipeline 
+      - QUALYS_URL=${QUALYS_URL}
+      - API_TOKEN=${API_TOKEN} 
 
+    command: python qualys_sync_hosts.py
 
+  # Index creation task
+  create_indexes:
+    profiles: ["create-indexes"]
+    build:
+      context: ./pipeline
+      dockerfile: Dockerfile
+    depends_on:
+      - mongodb 
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=mongodb-hosts-pipeline
+
+    command: python create_inexes.py 
