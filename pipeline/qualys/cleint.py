@@ -2,21 +2,22 @@ import time
 import requests
 from typing import Iterator
 
-from config import api_key, qualys_url, logger
+from config import logger
 from qualys.models import HostItem
 
 
 class QualysClient:
-    def __init__(self):
+    def __init__(self, api_key: str, url: str):
+
         self.api_key = api_key
-        self.url = qualys_url
+        self.url = url
         self.logger = logger
 
     def scroll_hosts(
         self,
         limit: int = 1,
         skip: int = 0,
-        max_retries: int = 5,
+        max_retries: int = 1,
         retry_delay: int = 1
     ) -> Iterator[HostItem]:
         retries = 0
@@ -37,11 +38,7 @@ class QualysClient:
                     self.logger.info("No more data returned from API. Stopping the generator.")
                     break
 
-                for item in raw_data:
-
-                    host = HostItem.model_validate(item)
-                    yield host
-
+                yield from map(HostItem.model_validate, raw_data)
 
                 skip += limit
                 retries = 0

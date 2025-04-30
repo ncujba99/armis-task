@@ -18,6 +18,7 @@ def sync_crowdstrike_hosts():
                 "$set": {
                     "aws_instance_id": host.instance_id,
                     "hostname": host.hostname,
+                    "os_version": host.os_version,
                     "crowdstrike": {
                         "id": host.id,
                         "first_seen": host.first_seen,

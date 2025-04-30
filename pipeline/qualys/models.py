@@ -211,6 +211,9 @@ class VolumeList(BaseModel):
         return v
 
 
+class LastVulnScan(BaseModel):
+    date: datetime = Field(..., alias="$date")
+
 class HostItem(BaseModel):
 
     id: int
@@ -226,7 +229,7 @@ class HostItem(BaseModel):
     lastComplianceScan: datetime
     lastLoggedOnUser: Optional[str] = None
     lastSystemBoot: datetime
-    lastVulnScan: Dict[str, datetime]
+    lastVulnScan: LastVulnScan
     manufacturer: str
     model: str
     modified: datetime

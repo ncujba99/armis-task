@@ -1,10 +1,10 @@
-from config import mongo_client
+from config import mongo_client, api_key, qualys_url
 from qualys.cleint import QualysClient
 
 
 def sync_qualys_hosts():
     collection = mongo_client["dev"]["hosts"]
-    qualys_client = QualysClient()
+    qualys_client = QualysClient(api_key=api_key, url=qualys_url)
 
     for host in qualys_client.scroll_hosts():
         ec2_asset = {}
@@ -23,10 +23,12 @@ def sync_qualys_hosts():
             filter={"$or": filter_conditions},
             update={
                 "$set": {
+                    "aws_instance_id": aws_instance_id,
+                    "hostname": host.dnsHostName,
+                    "os_version": host.os,
                     "qualys": {
                         "id": host.id,
                         "first_seen": host.created,
-                        # "last_seen": host.lastSystemBoot,
                         "modified": host.modified,
                         "address": host.address,
                         "fqdn": host.fqdn,
@@ -38,7 +40,7 @@ def sync_qualys_hosts():
                         "last_compliance_scan": host.lastComplianceScan,
                         "last_logged_on_user": host.lastLoggedOnUser,
                         "last_system_boot": host.lastSystemBoot,
-                        "last_vuln_scan": host.lastVulnScan.get("$date"),
+                        "last_vuln_scan": host.lastVulnScan.date,
                         "manufacturer": host.manufacturer,
                         "model": host.model,
                         "timezone": host.timezone,
@@ -57,9 +59,7 @@ def sync_qualys_hosts():
                         "ec2_asset": ec2_asset,
                         "accounts": [account.model_dump().get("HostAssetAccount") for account in host.account.list],
                         "tags": [tag.TagSimple.name for tag in host.tags.list],
-                    },
-                    "aws_instance_id": aws_instance_id,
-                    "hostname": host.dnsHostName,
+                    }
                 }
             },
             upsert=True
