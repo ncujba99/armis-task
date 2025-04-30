@@ -7,12 +7,14 @@ def sync_crowdstrike_hosts():
     crowdstrike_client = CrowdStrikeClient(api_key=api_key, url=crowdstrike_url)
 
     for host in crowdstrike_client.scroll_hosts():
+
+        filter_conditions = [{"crowdstrike.id": host.id}]
+        if host.instance_id:
+            filter_conditions.append({"aws_instance_id": host.instance_id})
+
         collection.update_one(
             filter={
-                "$or": [
-                    {"crowdstrike.id": host.id},
-                    {"aws_instance_id": host.instance_id},
-                ]
+                "$or": filter_conditions
             },
             update={
                 "$set": {
